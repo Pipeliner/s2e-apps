@@ -18,8 +18,10 @@ plugins = {
   "HostFiles"
 }
 
-pluginsConfig.HostFiles = {
-  baseDir = "~/demos"
+pluginsConfig = {
+  HostFiles = {
+    baseDir = "./demos"
+  }
 }
 
 
