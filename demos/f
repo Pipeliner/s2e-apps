@@ -1,0 +1,4 @@
+#!/bin/sh
+
+fs
+echo "Current path number is $?"

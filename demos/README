@@ -1,0 +1,20 @@
+#!/bin/sh
+clear
+
+RED=$(tput setaf 1;tput bold)
+RST=$(tput sgr0)
+CYAN=$(tput setaf 6;tput bold) # Cyan
+
+echo "${RED}Try S2E with the following demos:$RST"
+echo
+
+echo "${CYAN}#Demo 1${RST}"
+echo "$ fork-and-kill"
+echo
+
+echo "${CYAN}#Demo 2${RST}"
+echo "$ grade-this-exam"
+echo
+
+echo "Checkout $(tput setaf 2)s2e.epfl.ch$(tput sgr0) to learn how it works!"
+echo

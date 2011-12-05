@@ -1,0 +1,6 @@
+#!/bin/sh
+
+#QEMU=$HOME/s2em/build/qemu-release/i386-s2e-softmmu/qemu
+QEMU=$HOME/s2em/build/qemu-release/i386-softmmu/qemu
+
+$QEMU -m 48 -hda s2e_mini.qcow2 -net nic,model=pcnet -redir tcp:2222::22 -net user $*

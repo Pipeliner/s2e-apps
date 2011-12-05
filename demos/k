@@ -1,0 +1,9 @@
+#!/bin/sh
+
+RED=$(tput setaf 1;tput bold)
+RST=$(tput sgr0)
+CYAN=$(tput setaf 6;tput bold) # Cyan
+
+echo "${RED}Killing current state."
+echo "${CYAN}Look at the message in the S2E console in VMware!$RST"
+ks
