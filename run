@@ -1,6 +1,15 @@
-#!/bin/sh
+#!/bin/bash
 
-#QEMU=$HOME/s2em/build/qemu-release/i386-s2e-softmmu/qemu
-QEMU=$HOME/s2em/build/qemu-release/i386-softmmu/qemu
+S2E_QEMU_PATH=$HOME/s2em/build/qemu-release/
+if [[ "$0" =~ .*crun ]]; then
+	S2E_QEMU_VERSION=i386-softmmu
+else
+	S2E_QEMU_VERSION=i386-s2e-softmmu
+	S2E_ARGS="-s2e-config-file conf.lua"
+fi
 
-$QEMU -m 48 -hda s2e_mini.qcow2 -net nic,model=pcnet -redir tcp:2222::22 -net user $*
+IMG=../s2e_mini.qcow2
+
+QEMU=$S2E_QEMU_PATH/$S2E_QEMU_VERSION/qemu
+
+$QEMU -m 48 -hda $IMG $S2E_ARGS -net nic,model=pcnet -redir tcp:2222::22 -net user $*
