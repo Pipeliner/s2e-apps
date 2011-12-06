@@ -1,0 +1,4 @@
+#!/bin/bash
+s2eget divider
+s2eget divider-wrapper
+divider-wrapper | divider
