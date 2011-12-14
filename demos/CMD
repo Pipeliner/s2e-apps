@@ -1,4 +1,12 @@
 #!/bin/bash
 s2eget divider
+chmod +x divider
 s2eget divider-wrapper
-divider-wrapper | divider
+chmod +x divider-wrapper
+s2eget assert
+chmod +x assert
+s2eget returner
+chmod +x returner
+#assert '! divider-wrapper | divider'
+assert '! divider-wrapper | returner'
+
