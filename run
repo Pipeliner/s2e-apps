@@ -1,6 +1,7 @@
 #!/bin/bash
 
-S2E_QEMU_PATH=/oldhome/vadim/s2em/build/qemu-release/
+#S2E_QEMU_PATH=/oldhome/vadim/s2em/build/qemu-release/
+S2E_QEMU_PATH=/home/vadim/old/s2e-source-1.1-10.09.2011/s2e/build/qemu-release
 FLAGS=${*:--nographic -loadvm nogrready}
 if [[ "$0" =~ .*crun ]]; then
 	S2E_QEMU_VERSION=i386-softmmu
@@ -13,4 +14,4 @@ IMG=../s2e_mini.qcow2
 
 QEMU=$S2E_QEMU_PATH/$S2E_QEMU_VERSION/qemu
 
-$QEMU -m 48 -hda $IMG $S2E_ARGS -net nic,model=pcnet -redir tcp:2222::22 -net user $FLAGS
+$QEMU -m 48 -hda $IMG $S2E_ARGS -net nic,model=pcnet -redir tcp:2222::22 -net user $FLAGS -s2e-verbose

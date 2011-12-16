@@ -1,10 +1,8 @@
+#include <s2e.h>
 #include <stdio.h>
 int main()
 {
 	int a,b;
 	scanf("%d %d\n", &a, &b);
-	if (a>b)
-		return a-b;
-	else
-		return 0;
+	s2e_assert(a>b);
 }

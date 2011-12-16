@@ -1,8 +1,10 @@
-CFLAGS+=-I../include -std=c99 -m32 -g -o0
+CFLAGS+=-I../include -std=c99 -m32 -g -O0
 LDFLAGS+=-m32
-PROGS=factorial simple fibonacci overlap fs ks equations divider divider-wrapper returner assert
+SRC=$(wildcard *.c)
+PROGS=$(subst .c,,$(SRC))
+#PROGS=factorial simple fibonacci overlap fs ks equations divider divider-wrapper returner assert ab
 
 all: $(PROGS)
 
 clean:
-	rm $(PROGS) *.o
+	rm $(PROGS)
