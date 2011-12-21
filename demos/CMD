@@ -1,20 +1,4 @@
 #!/bin/bash
-s2eget divider
-chmod +x divider
-s2eget divider-wrapper
-chmod +x divider-wrapper
+s2eget md5test.sh
 s2eget assert
-chmod +x assert
-s2eget returner
-chmod +x returner
-s2eget readassert
-chmod +x readassert
-s2eget ab
-chmod +x ab
-divider-wrapper | readassert
-s2eget twodigits
-chmod +x twodigits
-twodigits | readassert
-#assert 'divider-wrapper | divider'
-#assert 'divider-wrapper | returner'
-
+s2eget runsymarg

@@ -15,12 +15,12 @@ int main(int argc, char **argv)
 	if (WIFEXITED(ret)) {
 		snprintf(msg, LEN, "Normally returned (%d): %s\n", WEXITSTATUS(ret), argv[1]);
 		printf("%s", msg);
-		_s2e_assert(WEXITSTATUS(ret), msg);
+		_s2e_assert(!WEXITSTATUS(ret), msg);
 	}
 	if (WIFSIGNALED(ret)) {
 		snprintf(msg, LEN, "Signaled (%d): %s\n", WTERMSIG(ret), argv[1]);
 		printf("%s", msg);
-		_s2e_assert(WEXITSTATUS(ret), msg);
+		_s2e_assert(!WTERMSIG(ret), msg);
 	}
 	return ret;
 
