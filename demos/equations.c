@@ -3,13 +3,12 @@
 
 int solvesEq(int a1, int a2, int b1, int b2)
 {
-    //int x = 3*a1+a2+b1;
-    //int y = a2+2*b1;
-    //return (x==100&&y==105);
-    //
+    // 3, 20, 2, 80..87
     int x = a1*a2;
     int y = a1+a2;
-    return (x==6&&y==5);
+    int z = b1*b1*b1*b1*b1*b1*a1+4;
+    int w = b2 >> 3 + a2;
+    return (x==60 && y==23 && z==196 && w==42 );
 }
 
 int main()

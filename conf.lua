@@ -38,7 +38,7 @@ plugins = {
 
 pluginsConfig = {
   HostFiles = {
-    baseDir = "./demos"
+    baseDirs = {"./demos"}
   }
 }
 

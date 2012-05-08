@@ -1,9 +1,13 @@
 #!/bin/bash
+S2E_ROOT=/home/vadim/s2es/s2e-04-12
+S2E_QEMU_ROOT=$S2E_ROOT/build/qemu-release/
+QEMU_NAME=qemu-system-i386
+VM_IMAGE=../s2e_mini.qcow2
+VM_SNAPSHOT=ready2
+VM_MEMORY=250
+#DEFAULT_FLAGS="-net nic,model=pcnet -redir tcp:2222::22 -net user"
 
-#S2E_QEMU_PATH=/oldhome/vadim/s2em/build/qemu-release/
-#S2E_QEMU_PATH=/home/vadim/old/s2e-source-1.1-10.09.2011/s2e/build/qemu-release
-S2E_QEMU_PATH=/oldhome/vadim/s2e-15.12.11/s2e/build/qemu-release/
-FLAGS=${*:--nographic -loadvm nogrready}
+FLAGS=${*:--loadvm $VM_SNAPSHOT}
 if [[ "$0" =~ .*crun ]]; then
 	S2E_QEMU_VERSION=i386-softmmu
 else
@@ -11,8 +15,7 @@ else
 	S2E_ARGS="-s2e-config-file conf.lua -s2e-verbose"
 fi
 
-IMG=../s2e_mini.qcow2
 
-QEMU=$S2E_QEMU_PATH/$S2E_QEMU_VERSION/qemu
+QEMU_BIN=$S2E_QEMU_ROOT/$S2E_QEMU_VERSION/$QEMU_NAME
 
-$QEMU -m 48 -hda $IMG $S2E_ARGS -net nic,model=pcnet -redir tcp:2222::22 -net user $FLAGS
+$QEMU_BIN -m $VM_MEMORY -hda $VM_IMAGE $S2E_ARGS $DEFAULT_FLAGS $FLAGS
