@@ -6,8 +6,8 @@ int main(int argc, char **argv)
 	s2e_make_symbolic(&x, sizeof(x), "x");
 	s2e_make_symbolic(&y, sizeof(y), "y");
 	if (x > y) {
-		printf("0 1\n");
+		s2e_message("x > y");
 	} else {
-		printf("1 0\n");
+		s2e_message("x <= y");
 	}
 }
