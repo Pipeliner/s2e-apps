@@ -33,13 +33,32 @@ plugins = {
   "TestCaseGenerator",
 
   -- s2eget
-  "HostFiles"
+  "HostFiles",
+
+  -- Track when the guest loads programs
+  "RawMonitor",
+
+  -- Detect when execution enters
+  -- the program of interest
+  "ModuleExecutionDetector",
+
+  -- Restrict symbolic execution to
+  -- the programs of interest
+--  "CodeSelector"
+--  "Example"
+  "RetChecker"
+-- "FunctionMonitor"
 }
 
 pluginsConfig = {
   HostFiles = {
     baseDirs = {"./demos"}
+  },
+  Example = {
+    traceBlockTranslation=true,
+    traceBlockExecution=true
   }
+
 }
 
 
