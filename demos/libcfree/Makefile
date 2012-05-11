@@ -1,3 +1,3 @@
 all:
-	gcc -nostdlib -m32 libcfree.S twodigits.c -I../../include -o libcfree
+	gcc -nostdlib -m32 libcfree.S overflower.c -I../../include -o libcfree
 

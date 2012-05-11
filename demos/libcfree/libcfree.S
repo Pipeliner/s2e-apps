@@ -2,7 +2,9 @@
 .globl _start
 
 _start:
+    #pop %ecx	#	ecx := argc: to check in main()
+    mov (%esp), %ecx	#	ecx := argc: to check in main()
     call main
-    movl $1, %eax
+    movl $1, %ecx
     xorl %ebx, %ebx
     int $0x80
