@@ -54,9 +54,8 @@ pluginsConfig = {
   HostFiles = {
     baseDirs = {"./demos"}
   },
-  Example = {
-    traceBlockTranslation=true,
-    traceBlockExecution=true
+  RetChecker = {
+    entryPoint = 0x080482fa
   }
 
 }

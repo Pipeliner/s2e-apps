@@ -63,12 +63,21 @@ public:
 
     void slotCall(S2EExecutionState* state, uint64_t pc);
     void slotRet(S2EExecutionState* state, uint64_t pc);
-    void slotEveryStep(S2EExecutionState *state, uint64_t pc);
+    void slotEveryTbEnding(S2EExecutionState *state, uint64_t pc);
+    void huntForEntryPoint(
+            ExecutionSignal *signal,
+            S2EExecutionState* state,
+            TranslationBlock *tb,
+            uint64_t endPc,
+            bool staticTarget,
+            uint64_t targetPc);
 private:
-    bool m_traceBlockTranslation;
-    bool m_traceBlockExecution;
+    uint64_t m_entryPoint;
+    bool m_reachedEntryPoint;
 
     ModuleExecutionDetector *m_detector;
+
+    sigc::connection m_hunt;
 };
 
 } // namespace plugins
