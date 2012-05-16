@@ -5,6 +5,6 @@ SYMARGS="--sym-args 0 2 1"
 echo "Hi S2e"
 export LD_PRELOAD=/root/guest/init_env/init_env.so
 get $APP
-read
+#read
 $APP --select-process-code `echo $SYMARGS`
 # --select-process-code --sym-args 0 2 4
