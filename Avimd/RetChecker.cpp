@@ -155,6 +155,10 @@ void RetChecker::initialize()
 
     m_detector->onModuleTranslateBlockEnd.connect(
             sigc::mem_fun(*this, &RetChecker::slotTranslateBlockEnd));
+
+    s2e()->getCorePlugin()->onException.connect(
+            sigc::mem_fun(*this, &RetChecker::slotException));
+
 }
 
 void RetChecker::slotTranslateBlockEnd(ExecutionSignal *signal,
@@ -175,9 +179,9 @@ void RetChecker::slotTranslateBlockEnd(ExecutionSignal *signal,
         signal->connect(sigc::mem_fun(*this,
                                       &RetChecker::slotRet));
         //s2e()->getDebugStream(state) << hexval(state->getPc()) << " is a ret!\n";
-    } else {
-        signal->connect(sigc::mem_fun(*this, &RetChecker::slotEveryStep));
-    }
+    } //else {
+    //    signal->connect(sigc::mem_fun(*this, &RetChecker::slotEveryStep));
+    //}
 }
 
 
@@ -221,6 +225,11 @@ void RetChecker::slotRet(S2EExecutionState *state, uint64_t pc)
     */
 
 
+}
+
+void RetChecker::slotException(S2EExecutionState *state, unsigned intNb, uint64_t pc)
+{
+    s2e()->getDebugStream(state) << "Exception @ " << hexval(state->getPc()) << "\n";
 }
 
 void RetChecker::slotEveryStep(S2EExecutionState *state, uint64_t pc)

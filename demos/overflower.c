@@ -1,15 +1,26 @@
 #include "s2e.h"
+#include <string.h>
+#include <stdio.h>
+//#define host
+#ifdef host
+	#define MSG(str) {printf(str); }
+#else
+	#define MSG(str) {printf(str); s2e_message(str); }
+#endif
 int i;
+char longbuf[1000];
 void f1() {
 	i++;
 	i++;
 	i++;
-	s2e_message("Hi from f1()\n");
+	MSG("Hi from f1()\n");
+	char shortbuf[40];
+	memcpy(shortbuf, longbuf, 1000);
 	i--;
 
 }
 int main(int argc, char **argv) {
-	s2e_message("main() start\n");
+	MSG("main() start\n");
 	i++;
 	i++;
 	i++;
@@ -28,6 +39,6 @@ int main(int argc, char **argv) {
 	i++;
 	i++;
 	i++;
-	s2e_message("main() end\n");
+	MSG("main() end\n");
 }
 

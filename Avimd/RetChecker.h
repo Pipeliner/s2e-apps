@@ -64,6 +64,7 @@ public:
     void slotCall(S2EExecutionState* state, uint64_t pc);
     void slotRet(S2EExecutionState* state, uint64_t pc);
     void slotEveryStep(S2EExecutionState *state, uint64_t pc);
+    void slotException(S2EExecutionState *state, unsigned intNb, uint64_t pc);
 private:
     bool m_traceBlockTranslation;
     bool m_traceBlockExecution;
