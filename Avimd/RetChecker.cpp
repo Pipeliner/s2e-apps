@@ -62,15 +62,11 @@ public:
     };
     void storeReturnAddress(Ret actualRet);
     RetCheckerResult checkReturnAddress(Ret actualRet, S2EExecutionState *state = NULL, bool verbose = true);
-    bool reachedEntryPoint() { return m_reachedEntryPoint; }
-    void rememberReachedEntryPoint() { m_reachedEntryPoint = true;}
 
 private:
     RetStack m_stack;
     RetChecker *m_plugin;
     bool retvalEqual(Ret a, Ret b);
-    bool m_reachedEntryPoint;
-
 public:
     RetCheckerState();
     virtual ~RetCheckerState();
@@ -105,22 +101,18 @@ RetCheckerState::RetCheckerResult RetCheckerState::checkReturnAddress(RetChecker
 {
     if (m_stack.empty()) {
         if (verbose)
-            m_plugin->s2e()->getMessagesStream(state) << "RetCheck failed: stack underflow\n";
+            m_plugin->s2e()->getDebugStream(state) << "RetCheck failed: stack underflow\n";
         return RCR_UNDERFLOW;
     } else {
         Ret savedRet = m_stack.top();
         m_stack.pop();
         if (savedRet == actualRet) {
-            if (verbose) {
-                m_plugin->s2e()->getMessagesStream(state) << "RetCheck succeded\n";
-                if (m_stack.empty() && verbose) {
-                    m_plugin->s2e()->getMessagesStream(state) << "Leaving block started from entryPoint\n";
-                }
-            }
+            if (verbose)
+                m_plugin->s2e()->getDebugStream(state) << "RetCheck succeded\n";
             return RCR_OK;
         } else {
-            m_plugin->s2e()->getMessagesStream(state) << "RetCheck failed: mismatch: "
-                    << savedRet << " expected " << " and actual address was " << actualRet << "\n";
+            m_plugin->s2e()->getDebugStream(state) << "RetCheck failed: mismatch: "
+                    << savedRet << " expected " << " and " << actualRet << " Given\n";
             return RCR_MISMATCH;
         }
     }
@@ -148,24 +140,21 @@ bool RetCheckerState::retvalEqual(Ret a, Ret b)
 
 void RetChecker::initialize()
 {
-    bool entrySet = false;
+    m_traceBlockTranslation = s2e()->getConfig()->getBool(
+            getConfigKey() + ".traceBlockTranslation");
+    m_traceBlockExecution = s2e()->getConfig()->getBool(
+            getConfigKey() + ".traceBlockExecution");
+
     m_detector = (ModuleExecutionDetector*)s2e()->getPlugin("ModuleExecutionDetector");
 
-    m_entryPoint = s2e()->getConfig()->getInt(
-            getConfigKey() + ".entryPoint", 0, &entrySet);
-    if (!entrySet) {
-        s2e()->getWarningsStream() << "RetChecker: you should specify entryPoint" << "\n"
-                << "You can use objdump -f $file" << "\n"
-                << "or objdump -t $file| awk '$6 == \"main\" && NR>3 {print $1}'" << "\n"
-                << "Disabling this functionality.\n";
-        m_detector->onModuleTranslateBlockEnd.connect(
-                sigc::mem_fun(*this, &RetChecker::slotTranslateBlockEnd));
-    } else {
+    if(!m_detector)
+        std::cerr << "Error loading Detector\n";
 
+    //s2e()->getCorePlugin()->onTranslateBlockEnd.connect(
+    //        sigc::mem_fun(*this, &RetChecker::slotTranslateBlockEnd));
 
-        m_hunt = s2e()->getCorePlugin()->onTranslateBlockEnd.connect(
-                sigc::mem_fun(*this, &RetChecker::huntForEntryPoint));
-    }
+    m_detector->onModuleTranslateBlockEnd.connect(
+            sigc::mem_fun(*this, &RetChecker::slotTranslateBlockEnd));
 }
 
 void RetChecker::slotTranslateBlockEnd(ExecutionSignal *signal,
@@ -181,52 +170,49 @@ void RetChecker::slotTranslateBlockEnd(ExecutionSignal *signal,
     if (tb->s2e_tb_type == TB_CALL || tb->s2e_tb_type == TB_CALL_IND) {
         signal->connect(sigc::mem_fun(*this,
                                       &RetChecker::slotCall));
+        //s2e()->getDebugStream(state) << hexval(state->getPc()) << " is a call!\n";
     } else if (tb->s2e_tb_type == TB_RET) {
         signal->connect(sigc::mem_fun(*this,
                                       &RetChecker::slotRet));
-    };
-
-    //DECLARE_PLUGINSTATE(RetCheckerState, state);
-    //if (!plgState->reachedEntryPoint())
-    //    signal->connect(sigc::mem_fun(*this, &RetChecker::slotEveryTbEnding));
+        //s2e()->getDebugStream(state) << hexval(state->getPc()) << " is a ret!\n";
+    } else {
+        signal->connect(sigc::mem_fun(*this, &RetChecker::slotEveryStep));
+    }
 }
 
 
 void RetChecker::slotCall(S2EExecutionState *state, uint64_t pc)
 {
-    DECLARE_PLUGINSTATE(RetCheckerState, state);
-    //if (plgState->reachedEntryPoint()) {
-        s2e()->getDebugStream(state) << "Call executed, we're at "  << hexval(state->getPc()) << "\n";
+    s2e()->getDebugStream(state) << "Call executed, we're at "  << hexval(state->getPc()) << "\n";
 
-        target_ulong newESP;
-        bool ok = state->readCpuRegisterConcrete(CPU_OFFSET(regs[R_ESP]),
+    target_ulong newESP;
+    bool ok = state->readCpuRegisterConcrete(CPU_OFFSET(regs[R_ESP]),
                                                  &newESP, sizeof(target_ulong));
-        if (ok) {
-            uint32_t savedRetConcrete;
-            state->readMemoryConcrete(newESP, &savedRetConcrete, 4);
-            klee::ref<klee::Expr> savedRet = klee::Expr::createPointer(savedRetConcrete);
-            s2e()->getDebugStream(state) << "Saved return address: " << savedRet << "\n";
-            s2e()->getDebugStream(state) << "And it is " << savedRet.get()->getKind() << " of bit length "
-                    << savedRet.get()->getWidth() << "\n";
-            plgState->storeReturnAddress(savedRet);
+    if (ok) {
+        //klee::ref<klee::Expr> savedRet = state->readMemory(newESP, klee::Expr::Int32);
+        uint32_t savedRetConcrete;
+        state->readMemoryConcrete(newESP, &savedRetConcrete, 4);
+        klee::ref<klee::Expr> savedRet = klee::Expr::createPointer(savedRetConcrete);
+        s2e()->getDebugStream(state) << "Saved return address: " << savedRet << "\n";
+        s2e()->getDebugStream(state) << "And it is " << savedRet.get()->getKind() << " of bit length "
+                << savedRet.get()->getWidth() << "\n";
+        DECLARE_PLUGINSTATE(RetCheckerState, state);
+        plgState->storeReturnAddress(savedRet);
 
-        } else {
-            s2e()->getDebugStream(state) << "wtf? Symbolic ESP\n";
-        }
-    //}
+    } else {
+        s2e()->getDebugStream(state) << "wtf? Symbolic ESP\n";
+    }
 
 }
 
 void RetChecker::slotRet(S2EExecutionState *state, uint64_t pc)
 {
+    s2e()->getDebugStream(state) << "Returned to " << hexval(state->getPc()) << "\n";
     DECLARE_PLUGINSTATE(RetCheckerState, state);
-    //if (plgState->reachedEntryPoint()) {
-        s2e()->getDebugStream(state) << "Returned to " << hexval(state->getPc()) << "\n";
 
-        //XXX hack: we use the fact Ret is ref<Expr>
-        klee::ref<klee::ConstantExpr> actualRet = klee::Expr::createPointer(state->getPc());
-        plgState->checkReturnAddress(actualRet);
-    //}
+    //XXX hack: we use the fact Ret is ref<Expr>
+    klee::ref<klee::ConstantExpr> actualRet = klee::Expr::createPointer(state->getPc());
+    plgState->checkReturnAddress(actualRet);
     /*
     switch(plgState->checkReturnAddress(actualRet)) {
     case RetCheckerState::RCR_OK: s2e()->getDebugStream(state) << "RetCheck passedOk\n"; break;
@@ -237,40 +223,9 @@ void RetChecker::slotRet(S2EExecutionState *state, uint64_t pc)
 
 }
 
-void RetChecker::slotEveryTbEnding(S2EExecutionState *state, uint64_t pc)
+void RetChecker::slotEveryStep(S2EExecutionState *state, uint64_t pc)
 {
-    //s2e()->getDebugStream(state) << "Stepping " << hexval(state->getPc()) << "\n";
-
-    // we assume main() is reached by instruction changing control flow
-    // i.e. main() aka entryPoint starts new translation block
-    // BUT! it can be run by libc and not be captured by ModuleExecutionDetector
-    DECLARE_PLUGINSTATE(RetCheckerState, state);
-    if (!plgState->reachedEntryPoint() && pc == m_entryPoint) {
-        s2e()->getMessagesStream(state) << "Reached entry point, enabling RetChecks";
-        plgState->rememberReachedEntryPoint();
-        m_hunt.disconnect();
-        m_detector->onModuleTranslateBlockEnd.connect(
-                sigc::mem_fun(*this, &RetChecker::slotTranslateBlockEnd));
-    }
-
-
-    /*
-    if (pc > m_entryPoint) {
-        s2e()->getDebugStream(state) << "WTF we passed entry point " << hexval(pc) << "\n";
-    }
-    */
-}
-
-void RetChecker::huntForEntryPoint(
-        ExecutionSignal *signal,
-        S2EExecutionState* state,
-        TranslationBlock *tb,
-        uint64_t endPc,
-        bool staticTarget,
-        uint64_t targetPc)
-{    
-    ModuleDescriptor fake;
-    slotTranslateBlockEnd(signal, state, fake, tb, endPc, staticTarget, targetPc);
+    s2e()->getDebugStream(state) << "Stepping " << hexval(state->getPc()) << "\n";
 }
 
 } // namespace plugins
