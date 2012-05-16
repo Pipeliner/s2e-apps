@@ -4,7 +4,7 @@ void f1() {
 	i++;
 	i++;
 	i++;
-	//s2e_message("Hi from f1()\n");
+	s2e_message("Hi from f1()\n");
 	i--;
 
 }
@@ -14,7 +14,7 @@ int main(int argc, char **argv) {
 		: "=r"(argc)
 	);
 
-	//s2e_message("main() start\n");
+	s2e_message("main() start\n");
 	i++;
 	i++;
 	i++;
@@ -33,6 +33,8 @@ int main(int argc, char **argv) {
 	i++;
 	i++;
 	i++;
-	//s2e_message("main() end\n");
+	s2e_message("main() end\n");
+
+	return 0;
 }
 

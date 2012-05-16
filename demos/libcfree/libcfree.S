@@ -5,6 +5,6 @@ _start:
     #pop %ecx	#	ecx := argc: to check in main()
     mov (%esp), %ecx	#	ecx := argc: to check in main()
     call main
-    movl $1, %ecx
+    movl $1, %eax
     xorl %ebx, %ebx
     int $0x80
