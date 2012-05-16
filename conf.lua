@@ -54,9 +54,9 @@ pluginsConfig = {
   HostFiles = {
     baseDirs = {"./demos"}
   },
-  RetChecker = {
-    entryPoint = 0x080482fa
-  }
+  --RetChecker = {
+  --  entryPoint = 0x080482fa
+  --}
 
 }
 

@@ -73,7 +73,6 @@ public:
             uint64_t targetPc);
 private:
     uint64_t m_entryPoint;
-    bool m_reachedEntryPoint;
 
     ModuleExecutionDetector *m_detector;
 
