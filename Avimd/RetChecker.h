@@ -41,6 +41,9 @@
 #include <s2e/Plugins/CorePlugin.h>
 #include <s2e/S2EExecutionState.h>
 #include <s2e/Plugins/ModuleExecutionDetector.h>
+#include <s2e/Plugins/Opcodes.h>
+
+#define RETCHECKER_OPCODE 0xB0
 
 namespace s2e {
 namespace plugins {
@@ -65,6 +68,7 @@ public:
     void slotRet(S2EExecutionState* state, uint64_t pc);
     void slotEveryStep(S2EExecutionState *state, uint64_t pc);
     void slotException(S2EExecutionState *state, unsigned intNb, uint64_t pc);
+    void slotCustomInstruction(S2EExecutionState *state, uint64_t operand);
 private:
     bool m_traceBlockTranslation;
     bool m_traceBlockExecution;

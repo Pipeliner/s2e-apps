@@ -156,8 +156,11 @@ void RetChecker::initialize()
     m_detector->onModuleTranslateBlockEnd.connect(
             sigc::mem_fun(*this, &RetChecker::slotTranslateBlockEnd));
 
-    s2e()->getCorePlugin()->onException.connect(
-            sigc::mem_fun(*this, &RetChecker::slotException));
+    //s2e()->getCorePlugin()->onException.connect(
+    //        sigc::mem_fun(*this, &RetChecker::slotException));
+
+    s2e()->getCorePlugin()->onCustomInstruction.connect(
+        sigc::mem_fun(*this, &RetChecker::slotCustomInstruction));
 
 }
 
@@ -197,9 +200,9 @@ void RetChecker::slotCall(S2EExecutionState *state, uint64_t pc)
         uint32_t savedRetConcrete;
         state->readMemoryConcrete(newESP, &savedRetConcrete, 4);
         klee::ref<klee::Expr> savedRet = klee::Expr::createPointer(savedRetConcrete);
-        s2e()->getDebugStream(state) << "Saved return address: " << savedRet << "\n";
-        s2e()->getDebugStream(state) << "And it is " << savedRet.get()->getKind() << " of bit length "
-                << savedRet.get()->getWidth() << "\n";
+        //s2e()->getDebugStream(state) << "Saved return address: " << savedRet << "\n";
+        //s2e()->getDebugStream(state) << "And it is " << savedRet.get()->getKind() << " of bit length "
+        //        << savedRet.get()->getWidth() << "\n";
         DECLARE_PLUGINSTATE(RetCheckerState, state);
         plgState->storeReturnAddress(savedRet);
 
@@ -211,7 +214,7 @@ void RetChecker::slotCall(S2EExecutionState *state, uint64_t pc)
 
 void RetChecker::slotRet(S2EExecutionState *state, uint64_t pc)
 {
-    s2e()->getDebugStream(state) << "Returned to " << hexval(state->getPc()) << "\n";
+    //s2e()->getDebugStream(state) << "Returned to " << hexval(state->getPc()) << "\n";
     DECLARE_PLUGINSTATE(RetCheckerState, state);
 
     //XXX hack: we use the fact Ret is ref<Expr>
@@ -235,6 +238,33 @@ void RetChecker::slotException(S2EExecutionState *state, unsigned intNb, uint64_
 void RetChecker::slotEveryStep(S2EExecutionState *state, uint64_t pc)
 {
     s2e()->getDebugStream(state) << "Stepping " << hexval(state->getPc()) << "\n";
+}
+
+void RetChecker::slotCustomInstruction(S2EExecutionState *state, uint64_t opcode)
+{
+    if (!OPCODE_CHECK(opcode, RETCHECKER_OPCODE)) {
+        return;
+    }
+    s2e()->getDebugStream(state) << "RetChecker instruction " << hexval(OPCODE_GETSUBFUNCTION(opcode))<< "\n";
+    opcode >>= 16;
+    uint8_t op = opcode & 0xFF;
+    opcode >>= 8;
+
+    switch(op) {
+    case 0: {
+        s2e()->getDebugStream(state) << "Entered main()\n";
+        break;
+    }
+
+    case 1: {
+        s2e()->getDebugStream(state) << "Left main()\n";
+        break;
+    }
+
+    default:
+        s2e()->getWarningsStream() << "Invalid RetChecker opcode " << hexval(opcode) << '\n';
+        break;
+    }
 }
 
 } // namespace plugins

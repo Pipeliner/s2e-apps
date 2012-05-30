@@ -551,3 +551,21 @@ __attribute__((always_inline)) static inline int s2e_range(int start, int end, c
     return x;
   }
 }
+
+__attribute__((always_inline)) static inline void rc_enter_main(void)
+{
+    __asm__ __volatile__(
+        ".byte 0x0f, 0x3f\n"
+        ".byte 0x00, 0xB0, 0x00, 0x00\n"
+        ".byte 0x00, 0x00, 0x00, 0x00\n"
+    );
+}
+
+__attribute__((always_inline)) static inline void rc_leave_main(void)
+{
+    __asm__ __volatile__(
+        ".byte 0x0f, 0x3f\n"
+        ".byte 0x00, 0xB0, 0x01, 0x00\n"
+        ".byte 0x00, 0x00, 0x00, 0x00\n"
+    );
+}
